@@ -77,7 +77,7 @@ namespace SocketIOSharp
             Socket.Dispose();
         }
 
-        public async Task Connect(Uri uri)
+        public async Task ConnectAsync(Uri uri)
         {
             if (Socket.GetState() != WebSocketState.Open && Socket.GetState() != WebSocketState.Connecting)
             {
@@ -97,7 +97,7 @@ namespace SocketIOSharp
         {
             List<Action<IEnumerable<JToken>>> eventListeners = null;
 
-            if(EventListenersDict.TryGetValue(type, out eventListeners))
+            if (EventListenersDict.TryGetValue(type, out eventListeners))
             {
                 eventListeners.Add(callback);
             }
@@ -107,12 +107,12 @@ namespace SocketIOSharp
             }
         }
 
-        public Task Emit(string type, string data)
+        public Task EmitAsync(string type, string data)
         {
             return Socket.SendAsync(Encoding.UTF8.GetBytes(string.Format("{0}/{1},[{2},{3}]", IOEventOpcode, Namespace, type, data)));
         }
 
-        public Task Disconnect(CancellationToken? cancellationToken = null)
+        public Task DisconnectAsync(CancellationToken? cancellationToken = null)
         {
             return Socket.CloseAsync();
         }
@@ -180,6 +180,6 @@ namespace SocketIOSharp
         {
             await Socket.SendAsync(Encoding.UTF8.GetBytes(EngineIOSessionInfo.PING.ToString("d")));
         }
-#endregion
+        #endregion
     }
 }
