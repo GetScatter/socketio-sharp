@@ -77,7 +77,7 @@ namespace SocketIOSharp
             Socket.Dispose();
         }
 
-        public async Task Connect(Uri uri, CancellationToken? cancellationToken = null)
+        public async Task Connect(Uri uri)
         {
             if (Socket.GetState() != WebSocketState.Open && Socket.GetState() != WebSocketState.Connecting)
             {
@@ -93,7 +93,7 @@ namespace SocketIOSharp
             ReceiverTask = ReceiveAsync();
         }
 
-        public void On(string type, Action<object> callback)
+        public void On(string type, Action<IEnumerable<JToken>> callback)
         {
             List<Action<IEnumerable<JToken>>> eventListeners = null;
 
