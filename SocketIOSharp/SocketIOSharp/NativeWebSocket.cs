@@ -8,15 +8,15 @@ namespace SocketIOSharp
     public class NativeWebSocket : IWebSocket
     {
         private WebSocket Socket;
-        Queue<byte[]> m_Messages = new Queue<byte[]>();
-        bool IsConnected = false;
-        string Error = null;
+        private Queue<byte[]> Messages = new Queue<byte[]>();
+        private bool IsConnected = false;
+        private string Error = null;
 
         public NativeWebSocket()
         {
         }
 
-        public async Task Connect(Uri url)
+        public async Task ConnectAsync(Uri url)
         {
             string protocol = url.Scheme;
             if (!protocol.Equals("ws") && !protocol.Equals("wss"))
@@ -24,7 +24,7 @@ namespace SocketIOSharp
 
             Socket = new WebSocket(url.ToString());
 
-            Socket.OnMessage += (sender, e) => m_Messages.Enqueue(e.RawData);
+            Socket.OnMessage += (sender, e) => Messages.Enqueue(e.RawData);
             Socket.OnOpen += (sender, e) => IsConnected = true;
             Socket.OnError += (sender, e) => Error = e.Message;
 
@@ -34,23 +34,23 @@ namespace SocketIOSharp
                 await Task.Yield();
         }
 
-        public Task Send(byte[] buffer)
+        public Task SendAsync(byte[] data)
         {
-            Socket.Send(buffer);
-            return Task.FromResult(0);
+            return Task.Run(() => { SendAsync(data); });
         }
 
-        public byte[] Receive()
+        public Task<byte[]> ReceiveAsync()
         {
-            if (m_Messages.Count == 0)
-                return null;
-            return m_Messages.Dequeue();
+            return Task.Run(() => {
+                if (Messages.Count == 0)
+                    return null;
+                return Messages.Dequeue();
+            });
         }
 
-        public Task Close()
+        public Task CloseAsync()
         {
-            Socket.Close();
-            return Task.FromResult(0);
+            return Task.Run(() => { Socket.Close(); });
         }
 
         public string GetError()

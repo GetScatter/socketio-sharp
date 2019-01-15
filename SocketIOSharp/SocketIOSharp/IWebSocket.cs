@@ -8,10 +8,10 @@ namespace SocketIOSharp
 {
     public interface IWebSocket : IDisposable
     {
-        Task Connect(Uri url);
-        Task Close();
-        Task Send(byte[] buffer);
-        byte[] Receive();
+        Task ConnectAsync(Uri url);
+        Task CloseAsync();
+        Task SendAsync(byte[] buffer);
+        Task<byte[]> ReceiveAsync();
         string GetError();
         WebSocketState GetState();
     }

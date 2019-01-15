@@ -9,6 +9,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Json.NET.Aot" Version="9.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\WebSocketSharp\websocket-sharp\websocket-sharp.csproj" />
   </ItemGroup>
 

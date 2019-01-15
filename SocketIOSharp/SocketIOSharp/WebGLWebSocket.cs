@@ -39,7 +39,7 @@ namespace SocketIOSharp
 
         #endregion
 
-        public async Task Connect(Uri url)
+        public async Task ConnectAsync(Uri url)
         {
             string protocol = url.Scheme;
             if (!protocol.Equals("ws") && !protocol.Equals("wss"))
@@ -51,27 +51,31 @@ namespace SocketIOSharp
                 await Task.Yield();
         }
 
-        public Task Close()
+        public Task CloseAsync()
         {
-            SocketClose(NativeRef);
-            return Task.FromResult(0);
+            return Task.Run(() => {
+                SocketClose(NativeRef);
+            });
         }
 
-        public Task Send(byte[] buffer)
+        public Task SendAsync(byte[] buffer)
 	    {
-		    SocketSend(NativeRef, buffer, buffer.Length);
-            return Task.FromResult(0);
+            return Task.Run(() => {
+                SocketSend(NativeRef, buffer, buffer.Length);
+            });
         }
 
-	    public byte[] Receive()
+	    public Task<byte[]> ReceiveAsync()
 	    {
-		    int length = SocketRecvLength(NativeRef);
-		    if (length == 0)
-			    return null;
+            return Task.Run(() => {
+                int length = SocketRecvLength(NativeRef);
+                if (length == 0)
+                    return null;
 
-		    byte[] buffer = new byte[length];
-		    SocketRecv(NativeRef, buffer, length);
-		    return buffer;
+                byte[] buffer = new byte[length];
+                SocketRecv(NativeRef, buffer, length);
+                return buffer;
+            });
 	    }
 
         public string GetError()
