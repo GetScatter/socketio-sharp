@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -107,9 +108,9 @@ namespace SocketIOSharp
             }
         }
 
-        public Task EmitAsync(string type, string data)
+        public Task EmitAsync(string type, object data)
         {
-            return Socket.SendAsync(Encoding.UTF8.GetBytes(string.Format("{0}/{1},[{2},{3}]", IOEventOpcode, Namespace, type, data)));
+            return Socket.SendAsync(Encoding.UTF8.GetBytes(string.Format("{0}/{1},[{2},{3}]", IOEventOpcode, Namespace, type, JsonConvert.SerializeObject(data))));
         }
 
         public Task DisconnectAsync(CancellationToken? cancellationToken = null)
