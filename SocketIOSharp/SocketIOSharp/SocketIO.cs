@@ -122,6 +122,11 @@ namespace SocketIOSharp
             return Socket.GetState() == WebSocketState.Open;
         }
 
+        public WebSocketState GetState()
+        {
+            return Socket.GetState();
+        }
+
         #region Utils
 
         private async Task ReceiveAsync()
