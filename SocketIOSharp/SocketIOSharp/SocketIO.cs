@@ -13,8 +13,9 @@ namespace SocketIOSharp
 {
     public class SocketIO : IDisposable
     {
-        public enum EngineIOSessionInfo
+        public enum EngineIOPacketOp
         {
+            OPEN,
             CLOSE,
             PING,
             PONG,
@@ -23,7 +24,7 @@ namespace SocketIOSharp
             NOOP
         };
 
-        public enum SocketIOSessionInfo
+        public enum SocketIOPacketOp
         {
             CONNECT,
             DISCONNECT,
@@ -38,8 +39,8 @@ namespace SocketIOSharp
         {
             get
             {
-                return EngineIOSessionInfo.MESSAGE.ToString("d") +
-                       SocketIOSessionInfo.CONNECT.ToString("d");
+                return EngineIOPacketOp.MESSAGE.ToString("d") +
+                       SocketIOPacketOp.CONNECT.ToString("d");
             }
         }
 
@@ -47,8 +48,8 @@ namespace SocketIOSharp
         {
             get
             {
-                return EngineIOSessionInfo.MESSAGE.ToString("d") +
-                       SocketIOSessionInfo.EVENT.ToString("d");
+                return EngineIOPacketOp.MESSAGE.ToString("d") +
+                       SocketIOPacketOp.EVENT.ToString("d");
             }
         }
 
@@ -184,7 +185,7 @@ namespace SocketIOSharp
 
         private async void Ping()
         {
-            await Socket.SendAsync(Encoding.UTF8.GetBytes(EngineIOSessionInfo.PING.ToString("d")));
+            await Socket.SendAsync(Encoding.UTF8.GetBytes(EngineIOPacketOp.PING.ToString("d")));
         }
         #endregion
     }
