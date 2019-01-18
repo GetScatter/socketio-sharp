@@ -111,7 +111,7 @@ namespace SocketIOSharp
 
         public Task EmitAsync(string type, object data)
         {
-            return Socket.SendAsync(Encoding.UTF8.GetBytes(string.Format("{0}/{1},[{2},{3}]", IOEventOpcode, Namespace, type, JsonConvert.SerializeObject(data))));
+            return Socket.SendAsync(Encoding.UTF8.GetBytes(string.Format("{0}/{1},[\"{2}\",{3}]", IOEventOpcode, Namespace, type, JsonConvert.SerializeObject(data))));
         }
 
         public Task DisconnectAsync(CancellationToken? cancellationToken = null)
@@ -137,9 +137,13 @@ namespace SocketIOSharp
             byte[] preamble = new byte[2];
             ArraySegment<byte> segment = new ArraySegment<byte>(frame, 0, frame.Length);
 
-            while (Socket.GetState() == WebSocketState.Open)
+            while (GetState() == WebSocketState.Open)
             {
                 byte[] result = await Socket.ReceiveAsync();
+
+                if (result == null)
+                    continue;
+
                 using (MemoryStream ms = new MemoryStream())
                 {
                     ms.Write(result, 0, result.Length);
@@ -155,7 +159,7 @@ namespace SocketIOSharp
                     }
 
                     //skip "," from packet
-                    ms.Seek(ms.Position + 1, SeekOrigin.Begin);
+                    ms.Seek(ms.Position + Namespace.Length + 2, SeekOrigin.Begin);
 
                     string jsonStr = null;
                     using (var sr = new StreamReader(ms))
@@ -169,8 +173,8 @@ namespace SocketIOSharp
                         continue;
 
                     string type = jArr[0].ToObject<string>();
-                    List<Action<IEnumerable<JToken>>> eventListeners = null;
 
+                    List<Action<IEnumerable<JToken>>> eventListeners = null;
                     if (EventListenersDict.TryGetValue(type, out eventListeners))
                     {
                         var args = jArr.Skip(1);

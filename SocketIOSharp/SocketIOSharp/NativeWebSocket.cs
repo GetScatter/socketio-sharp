@@ -36,7 +36,12 @@ namespace SocketIOSharp
 
         public Task SendAsync(byte[] data)
         {
-            return Task.Run(() => { SendAsync(data); });
+            return Task.Run(() => { Socket.Send(data); });
+        }
+
+        public Task SendAsync(string data)
+        {
+            return Task.Run(() => { Socket.Send(data); });
         }
 
         public Task<byte[]> ReceiveAsync()
