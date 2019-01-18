@@ -60,7 +60,7 @@ namespace SocketIOSharp
 
         public WebSocketState GetState()
         {
-            return Socket.ReadyState;
+            return Socket != null ? Socket.ReadyState : WebSocketState.Closed;
         }
 
         public void Dispose()

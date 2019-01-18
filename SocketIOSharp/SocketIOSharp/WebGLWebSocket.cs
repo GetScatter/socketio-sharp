@@ -92,7 +92,7 @@ namespace SocketIOSharp
 
         public WebSocketState GetState()
         {
-            return (WebSocketState)SocketState(NativeRef);
+            return NativeRef != 0 ? (WebSocketState)SocketState(NativeRef) : WebSocketState.Closed;
         }
 
         public void Dispose()
