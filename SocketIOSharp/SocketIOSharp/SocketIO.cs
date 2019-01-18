@@ -81,12 +81,12 @@ namespace SocketIOSharp
 
         public async Task ConnectAsync(Uri uri)
         {
-            if (Socket.GetState() != WebSocketState.Open && Socket.GetState() != WebSocketState.Connecting)
+            if (GetState() != WebSocketState.Open && GetState() != WebSocketState.Connecting)
             {
                 await Socket.ConnectAsync(uri);
             }
 
-            if (Socket.GetState() != WebSocketState.Open)
+            if (GetState() != WebSocketState.Open)
                 throw new Exception("Socket closed.");
 
             //connect to socket.io
@@ -121,12 +121,12 @@ namespace SocketIOSharp
 
         public bool IsConnected()
         {
-            return Socket.GetState() == WebSocketState.Open;
+            return GetState() == WebSocketState.Open;
         }
 
         public WebSocketState GetState()
         {
-            return Socket.GetState();
+            return Socket != null ? Socket.GetState() : WebSocketState.Closed;
         }
 
         #region Utils
