@@ -8,12 +8,18 @@ namespace SocketIOSharp
     public class NativeWebSocket : IWebSocket
     {
         private WebSocket Socket;
+        private Proxy Proxy;
         private Queue<byte[]> Messages = new Queue<byte[]>();
         private bool IsConnected = false;
         private string Error = null;
 
         public NativeWebSocket()
         {
+        }
+
+        public NativeWebSocket(Proxy proxy)
+        {
+            Proxy = proxy;
         }
 
         public async Task ConnectAsync(Uri url)
@@ -23,6 +29,9 @@ namespace SocketIOSharp
                 throw new ArgumentException("Unsupported protocol: " + protocol);
 
             Socket = new WebSocket(url.ToString());
+
+            if (Proxy != null)
+                Socket.SetProxy(Proxy.Url, Proxy.UserName, Proxy.Password);
 
             Socket.OnMessage += (sender, e) => Messages.Enqueue(e.RawData);
             Socket.OnOpen += (sender, e) => IsConnected = true;

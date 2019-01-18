@@ -61,16 +61,18 @@ namespace SocketIOSharp
         private Dictionary<string, List<Action<IEnumerable<JToken>>>> EventListenersDict { get; set; }
         private Task ReceiverTask { get; set; }
 
-        public SocketIO(int timeout = 60000, string ns = null)
+        public SocketIO(SocketIOConfiguration config)
         {
+            if (config == null)
+                config = new SocketIOConfiguration();
 
 #if UNITY_WEBGL && !UNITY_EDITOR
             Socket = new WebGLWebSocket();
 #else
-            Socket = new NativeWebSocket();
-#endif
-            TimeoutMS = timeout;
-            Namespace = ns;
+            Socket = new NativeWebSocket(config.Proxy);
+#endif            
+            TimeoutMS = config.Timeout;
+            Namespace = config.Namespace;
             EventListenersDict = new Dictionary<string, List<Action<IEnumerable<JToken>>>>();
         }
 
@@ -113,7 +115,7 @@ namespace SocketIOSharp
         {
             return Socket.SendAsync(string.Format("{0}/{1},[\"{2}\",{3}]", IOEventOpcode, Namespace, type, JsonConvert.SerializeObject(data)));
         }
-
+        
         public Task DisconnectAsync(CancellationToken? cancellationToken = null)
         {
             return Socket.CloseAsync();
