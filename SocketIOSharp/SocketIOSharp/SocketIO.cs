@@ -90,7 +90,7 @@ namespace SocketIOSharp
                 throw new Exception("Socket closed.");
 
             //connect to socket.io
-            await Socket.SendAsync(Encoding.UTF8.GetBytes(string.Format("{0}/{1}", IOConnectOpcode, Namespace)));
+            await Socket.SendAsync(string.Format("{0}/{1}", IOConnectOpcode, Namespace));
 
             ReceiverTask = ReceiveAsync();
         }
@@ -111,7 +111,7 @@ namespace SocketIOSharp
 
         public Task EmitAsync(string type, object data)
         {
-            return Socket.SendAsync(Encoding.UTF8.GetBytes(string.Format("{0}/{1},[\"{2}\",{3}]", IOEventOpcode, Namespace, type, JsonConvert.SerializeObject(data))));
+            return Socket.SendAsync(string.Format("{0}/{1},[\"{2}\",{3}]", IOEventOpcode, Namespace, type, JsonConvert.SerializeObject(data)));
         }
 
         public Task DisconnectAsync(CancellationToken? cancellationToken = null)
@@ -189,7 +189,7 @@ namespace SocketIOSharp
 
         private async void Ping()
         {
-            await Socket.SendAsync(Encoding.UTF8.GetBytes(EngineIOPacketOp.PING.ToString("d")));
+            await Socket.SendAsync(EngineIOPacketOp.PING.ToString("d"));
         }
         #endregion
     }

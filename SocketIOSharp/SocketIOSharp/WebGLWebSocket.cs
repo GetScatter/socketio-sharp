@@ -64,8 +64,15 @@ namespace SocketIOSharp
                 SocketSend(NativeRef, buffer, buffer.Length);
             });
         }
+        public Task SendAsync(string data)
+        {
+            return Task.Run(() => {
+                var buffer = Encoding.UTF8.GetBytes(data);
+                SocketSend(NativeRef, buffer, buffer.Length);
+            });
+        }
 
-	    public Task<byte[]> ReceiveAsync()
+        public Task<byte[]> ReceiveAsync()
 	    {
             return Task.Run(() => {
                 int length = SocketRecvLength(NativeRef);

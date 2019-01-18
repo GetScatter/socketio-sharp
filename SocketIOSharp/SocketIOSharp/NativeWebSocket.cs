@@ -34,9 +34,9 @@ namespace SocketIOSharp
                 await Task.Yield();
         }
 
-        public Task SendAsync(byte[] data)
+        public Task SendAsync(byte[] buffer)
         {
-            return Task.Run(() => { Socket.Send(data); });
+            return Task.Run(() => { Socket.Send(buffer); });
         }
 
         public Task SendAsync(string data)
