@@ -61,10 +61,10 @@ namespace SocketIOSharp
         private Dictionary<string, List<Action<IEnumerable<JToken>>>> EventListenersDict { get; set; }
         private Task ReceiverTask { get; set; }
 
-        public SocketIO(SocketIOConfiguration config)
+        public SocketIO(SocketIOConfigurator config)
         {
             if (config == null)
-                config = new SocketIOConfiguration();
+                config = new SocketIOConfigurator();
 
 #if UNITY_WEBGL && !UNITY_EDITOR
             Socket = new WebGLWebSocket();
