@@ -4,7 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using WebSocketSharp;
 
-namespace SocketIOSharp
+namespace SocketIOSharp.Core
 {
     public class WebGLWebSocket : IWebSocket
     {

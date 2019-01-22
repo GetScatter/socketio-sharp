@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using WebSocketSharp;
 
-namespace SocketIOSharp
+namespace SocketIOSharp.Unity3D
 {
     public class SocketIO : IDisposable
     {

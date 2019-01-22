@@ -1,4 +1,4 @@
-﻿namespace SocketIOSharp
+﻿namespace SocketIOSharp.Core
 {
     public class Proxy
     {

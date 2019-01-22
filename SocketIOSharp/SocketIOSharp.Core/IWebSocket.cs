@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using WebSocketSharp;
 
-namespace SocketIOSharp
+namespace SocketIOSharp.Core
 {
     public interface IWebSocket : IDisposable
     {

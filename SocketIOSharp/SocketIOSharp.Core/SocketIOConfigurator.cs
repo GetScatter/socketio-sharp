@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace SocketIOSharp
+﻿namespace SocketIOSharp.Core
 {
     public class SocketIOConfigurator
     {
