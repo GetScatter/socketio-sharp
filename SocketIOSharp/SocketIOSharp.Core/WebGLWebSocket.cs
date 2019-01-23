@@ -53,37 +53,32 @@ namespace SocketIOSharp.Core
 
         public Task CloseAsync()
         {
-            return Task.Run(() => {
-                SocketClose(NativeRef);
-            });
+            SocketClose(NativeRef);
+            return Task.CompletedTask;
         }
 
         public Task SendAsync(byte[] buffer)
 	    {
-            return Task.Run(() => {
-                SocketSend(NativeRef, buffer, buffer.Length);
-            });
+            SocketSend(NativeRef, buffer, buffer.Length);
+            return Task.CompletedTask;
         }
         public Task SendAsync(string data)
         {
-            return Task.Run(() => {
-                var buffer = Encoding.UTF8.GetBytes(data);
-                SocketSend(NativeRef, buffer, buffer.Length);
-            });
+            var buffer = Encoding.UTF8.GetBytes(data);
+            SocketSend(NativeRef, buffer, buffer.Length);
+            return Task.CompletedTask;
         }
 
         public Task<byte[]> ReceiveAsync()
 	    {
-            return Task.Run(() => {
-                int length = SocketRecvLength(NativeRef);
-                if (length == 0)
-                    return null;
+            int length = SocketRecvLength(NativeRef);
+            if (length == 0)
+                return null;
 
-                byte[] buffer = new byte[length];
-                SocketRecv(NativeRef, buffer, length);
-                return buffer;
-            });
-	    }
+            byte[] buffer = new byte[length];
+            SocketRecv(NativeRef, buffer, length);
+            return Task.FromResult(buffer);
+        }
 
         public string GetError()
         {

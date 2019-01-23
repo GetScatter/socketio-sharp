@@ -2,6 +2,10 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/SocketIOSharp/SocketIOSharp/bin/Debug/netstandard2.0
-/SocketIOSharp/SocketIOSharp/obj
 /SocketIOSharp/.vs/SocketIOSharp
+/SocketIOSharp/SocketIOSharp/bin
+/SocketIOSharp/SocketIOSharp/obj
+/SocketIOSharp/SocketIOSharp.Unity3D/obj
+/SocketIOSharp/SocketIOSharp.Unity3D/bin
+/SocketIOSharp/SocketIOSharp.Core/obj
+/SocketIOSharp/SocketIOSharp.Core/bin
