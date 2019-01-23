@@ -6,7 +6,7 @@ namespace SocketIOSharp.Core
 {
     public interface IWebSocket : IDisposable
     {
-        Task ConnectAsync(Uri url);
+        Task ConnectAsync(Uri url, Action<byte[]> onMessage);
         Task CloseAsync();
         Task SendAsync(byte[] buffer);
         Task SendAsync(string text);

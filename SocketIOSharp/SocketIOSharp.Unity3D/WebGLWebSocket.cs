@@ -1,12 +1,14 @@
 ﻿using System;
+using System.Collections;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 using WebSocketSharp;
 
 namespace SocketIOSharp.Core
 {
-    public class WebGLWebSocket : IWebSocket
+    public class WebGLWebSocket : MonoBehaviour, IWebSocket
     {
         int NativeRef = 0;
 
@@ -39,7 +41,7 @@ namespace SocketIOSharp.Core
 
         #endregion
 
-        public async Task ConnectAsync(Uri url)
+        public async Task ConnectAsync(Uri url, Action<byte[]> onMessage)
         {
             string protocol = url.Scheme;
             if (!protocol.Equals("ws") && !protocol.Equals("wss"))
@@ -49,6 +51,8 @@ namespace SocketIOSharp.Core
 
             while (SocketState(NativeRef) == 0)
                 await Task.Yield();
+
+            StartCoroutine(OnMessageCoroutine(onMessage));
         }
 
         public Task CloseAsync()
@@ -101,5 +105,29 @@ namespace SocketIOSharp.Core
         {
             SocketClose(NativeRef);
         }
+
+        #region Utils
+
+        private IEnumerator OnMessageCoroutine(Action<byte[]> onMessage)
+        {
+            if (onMessage == null)
+                throw new ArgumentNullException("onMessage");
+
+            while (GetState() == WebSocketState.Open)
+            {
+                int length = SocketRecvLength(NativeRef);
+                if (length == 0)
+                    continue;
+
+                byte[] buffer = new byte[length];
+                SocketRecv(NativeRef, buffer, length);
+
+                onMessage(buffer);
+
+                yield return null;
+            }
+        }
+
+        #endregion
     }
 }

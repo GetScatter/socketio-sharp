@@ -22,7 +22,7 @@ namespace SocketIOSharp.Core
             Proxy = proxy;
         }
 
-        public async Task ConnectAsync(Uri url)
+        public async Task ConnectAsync(Uri url, Action<byte[]> onMessage)
         {
             string protocol = url.Scheme;
             if (!protocol.Equals("ws") && !protocol.Equals("wss"))
@@ -33,7 +33,11 @@ namespace SocketIOSharp.Core
             if (Proxy != null)
                 Socket.SetProxy(Proxy.Url, Proxy.UserName, Proxy.Password);
 
-            Socket.OnMessage += (sender, e) => Messages.Enqueue(e.RawData);
+            Socket.OnMessage += (sender, e) => {
+                onMessage(e.RawData);
+                Messages.Enqueue(e.RawData);  
+            };
+
             Socket.OnOpen += (sender, e) => IsConnected = true;
             Socket.OnError += (sender, e) => Error = e.Message;
 

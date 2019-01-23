@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using WebSocketSharp;
 
-namespace SocketIOSharp.Unity3D
+namespace SocketIOSharp
 {
     public class SocketIO : IDisposable
     {
@@ -67,11 +67,8 @@ namespace SocketIOSharp.Unity3D
             if (config == null)
                 config = new SocketIOConfigurator();
 
-#if UNITY_WEBGL && !UNITY_EDITOR
-            Socket = new WebGLWebSocket();
-#else
             Socket = new NativeWebSocket(config.Proxy);
-#endif            
+
             TimeoutMS = config.Timeout;
             Namespace = config.Namespace;
             EventListenersDict = new Dictionary<string, List<Action<IEnumerable<JToken>>>>();
@@ -86,7 +83,7 @@ namespace SocketIOSharp.Unity3D
         {
             if (GetState() != WebSocketState.Open && GetState() != WebSocketState.Connecting)
             {
-                await Socket.ConnectAsync(uri);
+                await Socket.ConnectAsync(uri, ReceiveMessage);
             }
 
             if (GetState() != WebSocketState.Open)
@@ -94,8 +91,6 @@ namespace SocketIOSharp.Unity3D
 
             //connect to socket.io
             await Socket.SendAsync(string.Format("{0}/{1}", IOConnectOpcode, Namespace));
-
-            ReceiverTask = ReceiveAsync();
         }
 
         public void On(string type, Action<IEnumerable<JToken>> callback)
@@ -116,7 +111,7 @@ namespace SocketIOSharp.Unity3D
         {
             return Socket.SendAsync(string.Format("{0}/{1},[\"{2}\",{3}]", IOEventOpcode, Namespace, type, JsonConvert.SerializeObject(data)));
         }
-        
+
         public Task DisconnectAsync(CancellationToken? cancellationToken = null)
         {
             return Socket.CloseAsync();
@@ -134,57 +129,52 @@ namespace SocketIOSharp.Unity3D
 
         #region Utils
 
-        private async Task ReceiveAsync()
+        private void ReceiveMessage(byte[] result)
         {
             byte[] frame = new byte[4096];
             byte[] preamble = new byte[2];
             ArraySegment<byte> segment = new ArraySegment<byte>(frame, 0, frame.Length);
 
-            while (GetState() == WebSocketState.Open)
+            if (result == null)
+                return;
+
+            using (MemoryStream ms = new MemoryStream())
             {
-                byte[] result = await Socket.ReceiveAsync();
+                ms.Write(result, 0, result.Length);
 
-                if (result == null)
-                    continue;
+                ms.Seek(0, SeekOrigin.Begin);
+                ms.Read(preamble, 0, preamble.Length);
 
-                using (MemoryStream ms = new MemoryStream())
+                // Disregarding Handshaking/Upgrading
+                if (Encoding.UTF8.GetString(preamble) != IOEventOpcode)
                 {
-                    ms.Write(result, 0, result.Length);
+                    ms.Dispose();
+                    return;
+                }
 
-                    ms.Seek(0, SeekOrigin.Begin);
-                    ms.Read(preamble, 0, preamble.Length);
+                //skip "," from packet
+                ms.Seek(ms.Position + Namespace.Length + 2, SeekOrigin.Begin);
 
-                    // Disregarding Handshaking/Upgrading
-                    if (Encoding.UTF8.GetString(preamble) != IOEventOpcode)
+                string jsonStr = null;
+                using (var sr = new StreamReader(ms))
+                {
+                    jsonStr = sr.ReadToEnd();
+                }
+
+                var jArr = JArray.Parse(jsonStr);
+
+                if (jArr.Count == 0)
+                    return;
+
+                string type = jArr[0].ToObject<string>();
+
+                List<Action<IEnumerable<JToken>>> eventListeners = null;
+                if (EventListenersDict.TryGetValue(type, out eventListeners))
+                {
+                    var args = jArr.Skip(1);
+                    foreach (var listener in eventListeners)
                     {
-                        ms.Dispose();
-                        continue;
-                    }
-
-                    //skip "," from packet
-                    ms.Seek(ms.Position + Namespace.Length + 2, SeekOrigin.Begin);
-
-                    string jsonStr = null;
-                    using (var sr = new StreamReader(ms))
-                    {
-                        jsonStr = sr.ReadToEnd();
-                    }
-
-                    var jArr = JArray.Parse(jsonStr);
-
-                    if (jArr.Count == 0)
-                        continue;
-
-                    string type = jArr[0].ToObject<string>();
-
-                    List<Action<IEnumerable<JToken>>> eventListeners = null;
-                    if (EventListenersDict.TryGetValue(type, out eventListeners))
-                    {
-                        var args = jArr.Skip(1);
-                        foreach (var listener in eventListeners)
-                        {
-                            listener(args);
-                        }
+                        listener(args);
                     }
                 }
             }
