@@ -95,7 +95,11 @@ namespace SocketIOSharp
             //connect to socket.io
             await Socket.SendAsync(string.Format("{0}/{1}", IOConnectOpcode, Namespace));
 
+#if UNITY_WEBGL && !UNITY_EDITOR
             ReceiverTask = ReceiveAsync();
+#else
+            ReceiverTask = Task.Run(() => ReceiveAsync());
+#endif
         }
 
         public void On(string type, Action<IEnumerable<JToken>> callback)

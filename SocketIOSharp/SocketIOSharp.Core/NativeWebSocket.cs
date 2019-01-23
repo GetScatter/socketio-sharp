@@ -45,20 +45,12 @@ namespace SocketIOSharp.Core
 
         public Task SendAsync(byte[] buffer)
         {
-#if UNITY_WEBGL && !UNITY_EDITOR
-            Socket.Send(buffer);
-#else
             return Task.Run(() => { Socket.Send(buffer); });
-#endif
         }
 
         public Task SendAsync(string data)
         {
-#if UNITY_WEBGL && !UNITY_EDITOR
-            Socket.Send(data);
-#else
             return Task.Run(() => { Socket.Send(data); });
-#endif
         }
 
         public Task<byte[]> ReceiveAsync()
@@ -70,11 +62,7 @@ namespace SocketIOSharp.Core
 
         public Task CloseAsync()
         {
-#if UNITY_WEBGL && !UNITY_EDITOR
-            Socket.Close();
-#else
             return Task.Run(() => { Socket.Close(); });
-#endif
         }
 
         public string GetError()
