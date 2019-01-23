@@ -55,9 +55,11 @@ namespace SocketIOSharp.Core
 
         public Task<byte[]> ReceiveAsync()
         {
-            if (Messages.Count == 0)
-                return null;
-            return Task.FromResult(Messages.Dequeue());
+            return Task.Run(() => {
+                if (Messages.Count == 0)
+                    return null;
+                return Messages.Dequeue();
+            });
         }
 
         public Task CloseAsync()
