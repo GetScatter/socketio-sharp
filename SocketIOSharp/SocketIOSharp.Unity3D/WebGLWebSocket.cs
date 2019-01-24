@@ -8,12 +8,17 @@ using WebSocketSharp;
 
 namespace SocketIOSharp.Core
 {
-    public class WebGLWebSocket : MonoBehaviour, IWebSocket
+    public class WebGLWebSocket : IWebSocket
     {
-        int NativeRef = 0;
+        private int NativeRef = 0;
+        private MonoBehaviour ScriptInstance;
 
-        public WebGLWebSocket()
+        public WebGLWebSocket(MonoBehaviour scriptInstance)
         {
+            if (scriptInstance == null)
+                throw new ArgumentNullException("scriptInstance");
+
+            ScriptInstance = scriptInstance;
         }
 
         #region jslib import methods
@@ -54,7 +59,7 @@ namespace SocketIOSharp.Core
             while (SocketState(NativeRef) == 0)
                 await Task.Yield();
 
-            StartCoroutine(OnMessageCoroutine(onMessage));
+            ScriptInstance.StartCoroutine(OnMessageCoroutine(onMessage));
         }
 
         public Task CloseAsync()
@@ -74,11 +79,9 @@ namespace SocketIOSharp.Core
         }
         public Task SendAsync(string data)
         {
-            Console.WriteLine("WebGLWebSocket SendAsync.");
+            Console.WriteLine("WebGLWebSocket SendAsync data: {0}", data);
 
-            var buffer = Encoding.UTF8.GetBytes(data);
-            SocketSend(NativeRef, buffer, buffer.Length);
-            return Task.CompletedTask;
+            return SendAsync(Encoding.UTF8.GetBytes(data));
         }
 
         public Task<byte[]> ReceiveAsync()

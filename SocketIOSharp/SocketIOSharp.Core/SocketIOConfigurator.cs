@@ -2,7 +2,7 @@
 {
     public class SocketIOConfigurator
     {
-        public int    Timeout = 60000;
+        public int    Timeout = 5000;
         public string Namespace;
         public Proxy  Proxy;
     }

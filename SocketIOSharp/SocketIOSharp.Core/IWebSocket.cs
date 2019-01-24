@@ -9,7 +9,7 @@ namespace SocketIOSharp.Core
         Task ConnectAsync(Uri url, Action<byte[]> onMessage);
         Task CloseAsync();
         Task SendAsync(byte[] buffer);
-        Task SendAsync(string text);
+        Task SendAsync(string data);
         Task<byte[]> ReceiveAsync();
         string GetError();
         WebSocketState GetState();

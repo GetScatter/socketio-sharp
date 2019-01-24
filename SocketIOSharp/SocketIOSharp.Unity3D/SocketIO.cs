@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using UnityEngine;
 using WebSocketSharp;
 
 namespace SocketIOSharp.Unity3D
@@ -62,16 +63,19 @@ namespace SocketIOSharp.Unity3D
         private Dictionary<string, List<Action<IEnumerable<JToken>>>> EventListenersDict { get; set; }
         private Task ReceiverTask { get; set; }
 
-        public SocketIO(SocketIOConfigurator config)
+        public SocketIO(SocketIOConfigurator config, MonoBehaviour scriptInstance = null)
         {
             if (config == null)
                 config = new SocketIOConfigurator();
 
-#if UNITY_WEBGL && !UNITY_EDITOR
-            Socket = new WebGLWebSocket();
-#else
-            Socket = new NativeWebSocket(config.Proxy);
-#endif
+            if (Application.platform == RuntimePlatform.WebGLPlayer)
+            {
+                Socket = new WebGLWebSocket(scriptInstance);
+            }
+            else
+            {
+                Socket = new NativeWebSocket(config.Proxy);
+            }
 
             TimeoutMS = config.Timeout;
             Namespace = config.Namespace;
