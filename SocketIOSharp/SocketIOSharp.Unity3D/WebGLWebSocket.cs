@@ -43,6 +43,8 @@ namespace SocketIOSharp.Core
 
         public async Task ConnectAsync(Uri url, Action<byte[]> onMessage)
         {
+            Console.WriteLine("WebGLWebSocket ConnectAsync.");
+
             string protocol = url.Scheme;
             if (!protocol.Equals("ws") && !protocol.Equals("wss"))
                 throw new ArgumentException("Unsupported protocol: " + protocol);
@@ -57,17 +59,23 @@ namespace SocketIOSharp.Core
 
         public Task CloseAsync()
         {
+            Console.WriteLine("WebGLWebSocket CloseAsync.");
+
             SocketClose(NativeRef);
             return Task.CompletedTask;
         }
 
         public Task SendAsync(byte[] buffer)
 	    {
+            Console.WriteLine("WebGLWebSocket SendAsync.");
+
             SocketSend(NativeRef, buffer, buffer.Length);
             return Task.CompletedTask;
         }
         public Task SendAsync(string data)
         {
+            Console.WriteLine("WebGLWebSocket SendAsync.");
+
             var buffer = Encoding.UTF8.GetBytes(data);
             SocketSend(NativeRef, buffer, buffer.Length);
             return Task.CompletedTask;
@@ -75,6 +83,8 @@ namespace SocketIOSharp.Core
 
         public Task<byte[]> ReceiveAsync()
 	    {
+            Console.WriteLine("WebGLWebSocket ReceiveAsync.");
+
             int length = SocketRecvLength(NativeRef);
             if (length == 0)
                 return null;
@@ -86,6 +96,8 @@ namespace SocketIOSharp.Core
 
         public string GetError()
         {
+            Console.WriteLine("WebGLWebSocket GetError.");
+
             const int bufsize = 1024;
             byte[] buffer = new byte[bufsize];
             int result = SocketError(NativeRef, buffer, bufsize);

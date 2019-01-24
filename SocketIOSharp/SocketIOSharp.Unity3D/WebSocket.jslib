@@ -1,4 +1,4 @@
-var LibraryWebSockets = {
+var LibraryWebGLWebSocket = {
 $webSocketInstances: [],
 
 SocketCreate: function(url)
@@ -118,5 +118,5 @@ SocketClose: function (socketInstance)
 }
 };
 
-autoAddDeps(LibraryWebSockets, '$webSocketInstances');
-mergeInto(LibraryManager.library, LibraryWebSockets);
+autoAddDeps(LibraryWebGLWebSocket, '$webSocketInstances');
+mergeInto(LibraryManager.library, LibraryWebGLWebSocket);

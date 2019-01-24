@@ -67,7 +67,11 @@ namespace SocketIOSharp.Unity3D
             if (config == null)
                 config = new SocketIOConfigurator();
 
+#if UNITY_WEBGL && !UNITY_EDITOR
+            Socket = new WebGLWebSocket();
+#else
             Socket = new NativeWebSocket(config.Proxy);
+#endif
 
             TimeoutMS = config.Timeout;
             Namespace = config.Namespace;
