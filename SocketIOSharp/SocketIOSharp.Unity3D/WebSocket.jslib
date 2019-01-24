@@ -3,9 +3,24 @@ $webSocketInstances: [],
 
 SocketCreate: function(url)
 {
+	var ws = null
+
+	if (typeof WebSocket !== 'undefined') {
+	  ws = WebSocket
+	} else if (typeof MozWebSocket !== 'undefined') {
+	  ws = MozWebSocket
+	} else if (typeof global !== 'undefined') {
+	  ws = global.WebSocket || global.MozWebSocket
+	} else if (typeof window !== 'undefined') {
+	  ws = window.WebSocket || window.MozWebSocket
+	} else if (typeof self !== 'undefined') {
+	  ws = self.WebSocket || self.MozWebSocket
+	}
+
 	var str = Pointer_stringify(url);
 	var socket = {
-		socket: new WebSocket(str),
+		socket: new ws(str),
+		enc: new TextEncoder(),
 		buffer: new Uint8Array(0),
 		error: null,
 		messages: []
@@ -29,7 +44,7 @@ SocketCreate: function(url)
 			socket.messages.push(array);
 		}
 		else if(typeof e.data === "string") {
-			// Todo: handle text type
+			socket.messages.push(socket.enc.encode(e.data));
 		}
 	};
 
@@ -86,10 +101,16 @@ SocketError: function (socketInstance, ptr, bufsize)
 	return 1;
 },
 
-SocketSend: function (socketInstance, ptr, length)
+SocketSendBinary: function (socketInstance, ptr, length)
 {
 	var socket = webSocketInstances[socketInstance];
-	socket.socket.send(HEAPU8.buffer.slice(ptr, ptr+length));
+	socket.socket.send (HEAPU8.buffer.slice(ptr, ptr+length));
+},
+
+SocketSend: function (socketInstance, data)
+{
+	var socket = webSocketInstances[socketInstance];
+	socket.socket.send(Pointer_stringify(data));
 },
 
 SocketRecvLength: function(socketInstance)

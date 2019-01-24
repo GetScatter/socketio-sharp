@@ -87,7 +87,7 @@ namespace SocketIOSharp.Unity3D
             Socket.Dispose();
         }
 
-        public async Task ConnectAsync(Uri uri)
+        public async Task<WebSocketState> ConnectAsync(Uri uri)
         {
             if (GetState() != WebSocketState.Open && GetState() != WebSocketState.Connecting)
             {
@@ -95,10 +95,11 @@ namespace SocketIOSharp.Unity3D
             }
 
             if (GetState() != WebSocketState.Open)
-                throw new Exception("Socket closed.");
+                return GetState();
 
             //connect to socket.io
             await Socket.SendAsync(string.Format("{0}/{1}", IOConnectOpcode, Namespace));
+            return GetState();
         }
 
         public void On(string type, Action<IEnumerable<JToken>> callback)

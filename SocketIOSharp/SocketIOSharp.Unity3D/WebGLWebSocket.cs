@@ -24,32 +24,33 @@ namespace SocketIOSharp.Core
         #region jslib import methods
 
         [DllImport("__Internal")]
-	    private static extern int SocketCreate (string url);
+	    private static extern int SocketCreate(string url);
 
 	    [DllImport("__Internal")]
-	    private static extern int SocketState (int socketInstance);
+	    private static extern int SocketState(int socketInstance);
+
+        [DllImport("__Internal")]
+        private static extern void SocketSendBinary(int socketInstance, byte[] ptr, int length);
+
+        [DllImport("__Internal")]
+	    private static extern void SocketSend(int socketInstance, string data);
 
 	    [DllImport("__Internal")]
-	    private static extern void SocketSend (int socketInstance, byte[] ptr, int length);
+	    private static extern void SocketRecv(int socketInstance, byte[] ptr, int length);
 
 	    [DllImport("__Internal")]
-	    private static extern void SocketRecv (int socketInstance, byte[] ptr, int length);
+	    private static extern int SocketRecvLength(int socketInstance);
 
 	    [DllImport("__Internal")]
-	    private static extern int SocketRecvLength (int socketInstance);
+	    private static extern void SocketClose(int socketInstance);
 
 	    [DllImport("__Internal")]
-	    private static extern void SocketClose (int socketInstance);
-
-	    [DllImport("__Internal")]
-	    private static extern int SocketError (int socketInstance, byte[] ptr, int length);
+	    private static extern int SocketError(int socketInstance, byte[] ptr, int length);
 
         #endregion
 
         public async Task ConnectAsync(Uri url, Action<byte[]> onMessage)
         {
-            Console.WriteLine("WebGLWebSocket ConnectAsync.");
-
             string protocol = url.Scheme;
             if (!protocol.Equals("ws") && !protocol.Equals("wss"))
                 throw new ArgumentException("Unsupported protocol: " + protocol);
@@ -64,30 +65,23 @@ namespace SocketIOSharp.Core
 
         public Task CloseAsync()
         {
-            Console.WriteLine("WebGLWebSocket CloseAsync.");
-
             SocketClose(NativeRef);
             return Task.CompletedTask;
         }
 
         public Task SendAsync(byte[] buffer)
 	    {
-            Console.WriteLine("WebGLWebSocket SendAsync.");
-
-            SocketSend(NativeRef, buffer, buffer.Length);
+            SocketSendBinary(NativeRef, buffer, buffer.Length);
             return Task.CompletedTask;
         }
         public Task SendAsync(string data)
         {
-            Console.WriteLine("WebGLWebSocket SendAsync data: {0}", data);
-
-            return SendAsync(Encoding.UTF8.GetBytes(data));
+            SocketSend(NativeRef, data);
+            return Task.CompletedTask;
         }
 
         public Task<byte[]> ReceiveAsync()
 	    {
-            Console.WriteLine("WebGLWebSocket ReceiveAsync.");
-
             int length = SocketRecvLength(NativeRef);
             if (length == 0)
                 return null;
@@ -99,8 +93,6 @@ namespace SocketIOSharp.Core
 
         public string GetError()
         {
-            Console.WriteLine("WebGLWebSocket GetError.");
-
             const int bufsize = 1024;
             byte[] buffer = new byte[bufsize];
             int result = SocketError(NativeRef, buffer, bufsize);
@@ -130,16 +122,21 @@ namespace SocketIOSharp.Core
 
             while (GetState() == WebSocketState.Open)
             {
-                int length = SocketRecvLength(NativeRef);
-                if (length == 0)
-                    continue;
+                int length = 0;
+
+                while (true)
+                {
+                    length = SocketRecvLength(NativeRef);
+                    if (length == 0)
+                        yield return null;
+                    else
+                        break;
+                }
 
                 byte[] buffer = new byte[length];
                 SocketRecv(NativeRef, buffer, length);
 
                 onMessage(buffer);
-
-                yield return null;
             }
         }
 
