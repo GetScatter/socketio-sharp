@@ -89,6 +89,9 @@ namespace SocketIOSharp.Core
 
         public void On(string type, Action<IEnumerable<object>> callback)
         {
+            if (callback == null)
+                return;
+
             List<Action<IEnumerable<object>>> eventListeners = null;
 
             if (EventListenersDict.TryGetValue(type, out eventListeners))
@@ -99,6 +102,32 @@ namespace SocketIOSharp.Core
             {
                 EventListenersDict.Add(type, new List<Action<IEnumerable<object>>>() { callback });
             }
+        }
+
+        public void Off(string type)
+        {
+            if(EventListenersDict.ContainsKey(type))
+                EventListenersDict[type].Clear();
+        }
+
+        public void Off(string type, int index)
+        {
+            if (EventListenersDict.ContainsKey(type))
+                EventListenersDict[type].RemoveAt(index);
+        }
+
+        public void Off(Action<IEnumerable<object>> callback)
+        {
+            foreach(var el in EventListenersDict.Values)
+            {
+                el.Remove(callback);
+            }
+        }
+
+        public void Off(string type, Action<IEnumerable<object>> callback)
+        {
+            if (EventListenersDict.ContainsKey(type))
+                EventListenersDict[type].Remove(callback);
         }
 
         public Task EmitAsync(string type, object data)
