@@ -49,14 +49,15 @@ namespace SocketIOSharp.Core
             }
         }
 
-        protected string SocketID { get; set; }
-        protected UInt64 PingInterval { get; set; }
-        protected UInt64 PingTimeout { get; set; }
         protected string Namespace { get; set; }
         protected bool   isConnected { get; set; }
 
         protected IWebSocket Socket { get; set; }
         protected Dictionary<string, List<Action<IEnumerable<object>>>> EventListenersDict { get; set; }
+
+        public string SocketID { get; set; }
+        public UInt64 PingInterval { get; set; }
+        public UInt64 PingTimeout { get; set; }
 
         public SocketIOBase(SocketIOConfigurator config)
         {
