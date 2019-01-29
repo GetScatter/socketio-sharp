@@ -53,6 +53,7 @@ namespace SocketIOSharp.Core
         protected UInt64 PingInterval { get; set; }
         protected UInt64 PingTimeout { get; set; }
         protected string Namespace { get; set; }
+        protected bool   isConnected { get; set; }
 
         protected IWebSocket Socket { get; set; }
         protected Dictionary<string, List<Action<IEnumerable<object>>>> EventListenersDict { get; set; }
@@ -133,12 +134,13 @@ namespace SocketIOSharp.Core
 
         public Task DisconnectAsync()
         {
+            isConnected = false;
             return Socket.CloseAsync();
         }
 
         public bool IsConnected()
         {
-            return GetState() == WebSocketState.Open;
+            return GetState() == WebSocketState.Open && isConnected;
         }
 
         public WebSocketState GetState()
@@ -148,8 +150,6 @@ namespace SocketIOSharp.Core
 
         private void ReceiveMessage(byte[] result)
         {
-            byte[] preamble = new byte[2];
-
             if (result == null)
                 return;
 
@@ -160,17 +160,18 @@ namespace SocketIOSharp.Core
                 ms.Write(result, 0, result.Length);
                 ms.Seek(0, SeekOrigin.Begin);
 
-                var iop = ms.ReadByte();
+                var iop = ms.ReadByte() - '0';
                 if(iop == (byte)EngineIOPacketOp.OPEN)
                 {
                     using (var sr = new StreamReader(ms))
                     {
                         jsonStr = sr.ReadToEnd();
                     }
+                    ParseEngineIOInitValues(jsonStr);
                 }
                 else if (iop == (byte)EngineIOPacketOp.MESSAGE)
                 {
-                    var siop = ms.ReadByte();
+                    var siop = ms.ReadByte() - '0';
                     if(siop == (byte)SocketIOPacketOp.EVENT)
                     {
                         //skip "," from packet
@@ -181,10 +182,11 @@ namespace SocketIOSharp.Core
                         }
                         EmitToEventListeners(jsonStr);
                     }
-                    else if(siop == (byte)SocketIOPacketOp.CONNECT)
+                    else if(!isConnected && siop == (byte)SocketIOPacketOp.CONNECT)
                     {
                         //connect to socket.io
                         Socket.SendAsync(string.Format("{0}/{1}", IOConnectOpcode, Namespace));
+                        isConnected = true;
                     }
                 }
                 else if(iop == (byte)EngineIOPacketOp.PONG)
