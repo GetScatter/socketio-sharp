@@ -25,7 +25,30 @@ namespace SocketIOSharp.Unity3D
 
         #region Utils
 
-        protected override void CallMessageListeners(string jsonStr)
+        protected override void ParseEngineIOInitValues(string jsonStr)
+        {
+            var jObj = JObject.Parse(jsonStr);
+
+            var sidToken = jObj.SelectToken("sid");
+            if (sidToken == null)
+                throw new ArgumentException("sid field not found.");
+
+            SocketID = sidToken.ToObject<string>();
+
+            var pingIntervalToken = jObj.SelectToken("pingInterval");
+            if (pingIntervalToken == null)
+                throw new ArgumentException("pingInterval field not found.");
+
+            PingInterval = pingIntervalToken.ToObject<UInt64>();
+
+            var pingTimeoutToken = jObj.SelectToken("pingTimeout");
+            if (pingTimeoutToken == null)
+                throw new ArgumentException("pingTimeout field not found.");
+
+            PingTimeout = pingTimeoutToken.ToObject<UInt64>();
+        }
+
+        protected override void EmitToEventListeners(string jsonStr)
         {
             var jArr = JArray.Parse(jsonStr);
 

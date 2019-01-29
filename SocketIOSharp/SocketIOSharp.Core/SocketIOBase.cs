@@ -49,20 +49,19 @@ namespace SocketIOSharp.Core
             }
         }
 
+        protected string SocketID { get; set; }
+        protected UInt64 PingInterval { get; set; }
+        protected UInt64 PingTimeout { get; set; }
         protected string Namespace { get; set; }
-        protected int TimeoutMS { get; set; }
 
         protected IWebSocket Socket { get; set; }
-
         protected Dictionary<string, List<Action<IEnumerable<object>>>> EventListenersDict { get; set; }
-        protected Task ReceiverTask { get; set; }
 
         public SocketIOBase(SocketIOConfigurator config)
         {
             if (config == null)
                 config = new SocketIOConfigurator();
 
-            TimeoutMS = config.Timeout;
             Namespace = config.Namespace;
             EventListenersDict = new Dictionary<string, List<Action<IEnumerable<object>>>>();
         }
@@ -74,16 +73,13 @@ namespace SocketIOSharp.Core
 
         public async Task<WebSocketState> ConnectAsync(Uri uri)
         {
-            if (GetState() != WebSocketState.Open && GetState() != WebSocketState.Connecting)
+            WebSocketState state = GetState();
+
+            if (state != WebSocketState.Open && state != WebSocketState.Connecting)
             {
                 await Socket.ConnectAsync(uri, ReceiveMessage);
             }
 
-            if (GetState() != WebSocketState.Open)
-                return GetState();
-
-            //connect to socket.io
-            await Socket.SendAsync(string.Format("{0}/{1}", IOConnectOpcode, Namespace));
             return GetState();
         }
 
@@ -159,33 +155,54 @@ namespace SocketIOSharp.Core
 
             using (MemoryStream ms = new MemoryStream())
             {
-                ms.Write(result, 0, result.Length);
-
-                ms.Seek(0, SeekOrigin.Begin);
-                ms.Read(preamble, 0, preamble.Length);
-
-                // Disregarding Handshaking/Upgrading
-                if (Encoding.UTF8.GetString(preamble) != IOEventOpcode)
-                {
-                    ms.Dispose();
-                    return;
-                }
-
-                //skip "," from packet
-                ms.Seek(ms.Position + Namespace.Length + 2, SeekOrigin.Begin);
-
                 string jsonStr = null;
-                using (var sr = new StreamReader(ms))
-                {
-                    jsonStr = sr.ReadToEnd();
-                }
 
-                CallMessageListeners(jsonStr);
+                ms.Write(result, 0, result.Length);
+                ms.Seek(0, SeekOrigin.Begin);
+
+                var iop = ms.ReadByte();
+                if(iop == (byte)EngineIOPacketOp.OPEN)
+                {
+                    using (var sr = new StreamReader(ms))
+                    {
+                        jsonStr = sr.ReadToEnd();
+                    }
+                }
+                else if (iop == (byte)EngineIOPacketOp.MESSAGE)
+                {
+                    var siop = ms.ReadByte();
+                    if(siop == (byte)SocketIOPacketOp.EVENT)
+                    {
+                        //skip "," from packet
+                        ms.Seek(ms.Position + Namespace.Length + 2, SeekOrigin.Begin);
+                        using (var sr = new StreamReader(ms))
+                        {
+                            jsonStr = sr.ReadToEnd();
+                        }
+                        EmitToEventListeners(jsonStr);
+                    }
+                    else if(siop == (byte)SocketIOPacketOp.CONNECT)
+                    {
+                        //connect to socket.io
+                        Socket.SendAsync(string.Format("{0}/{1}", IOConnectOpcode, Namespace));
+                    }
+                }
+                else if(iop == (byte)EngineIOPacketOp.PONG)
+                {
+                    List<Action<IEnumerable<object>>> eventListeners = null;
+                    if (EventListenersDict.TryGetValue("pong", out eventListeners))
+                    {
+                        foreach (var listener in eventListeners)
+                        {
+                            listener(new List<object>());
+                        }
+                    }
+                }
             }
         }
 
-        protected abstract void CallMessageListeners(string jsonStr);
-
+        protected abstract void ParseEngineIOInitValues(string jsonStr);
+        protected abstract void EmitToEventListeners(string jsonStr);
         protected abstract string SerializeEmitObject(object data);
     }
 }
