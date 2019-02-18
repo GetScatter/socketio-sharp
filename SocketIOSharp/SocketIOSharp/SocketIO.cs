@@ -12,8 +12,16 @@ using WebSocketSharp;
 
 namespace SocketIOSharp
 {
+    /// <summary>
+    /// SocketIO client to connect to a socketIO server supporting Websockets only
+    /// This implementation is generic version and uses websocketsharp library
+    /// </summary>
     public class SocketIO : SocketIOBase
     {
+        /// <summary>
+        /// Construct socketIO client with given configuration
+        /// </summary>
+        /// <param name="config"></param>
         public SocketIO(SocketIOConfigurator config) :
                 base(config)
         {

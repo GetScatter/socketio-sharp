@@ -49,6 +49,12 @@ namespace SocketIOSharp.Core
 
         #endregion
 
+        /// <summary>
+        /// Connect asyncronoushly to websocket server
+        /// </summary>
+        /// <param name="url">url to connect to</param>
+        /// <param name="onMessage">add callback on received messages</param>
+        /// <returns></returns>
         public async Task ConnectAsync(Uri url, Action<byte[]> onMessage)
         {
             string protocol = url.Scheme;
@@ -63,23 +69,42 @@ namespace SocketIOSharp.Core
             ScriptInstance.StartCoroutine(OnMessageCoroutine(onMessage));
         }
 
+        /// <summary>
+        /// Close asyncronoushly from websocket server
+        /// </summary>
+        /// <returns></returns>
         public Task CloseAsync()
         {
             SocketClose(NativeRef);
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Send buffer asyncronoushly to websocket server
+        /// </summary>
+        /// <param name="buffer">data buffer</param>
+        /// <returns></returns>
         public Task SendAsync(byte[] buffer)
 	    {
             SocketSendBinary(NativeRef, buffer, buffer.Length);
             return Task.CompletedTask;
         }
+
+        /// <summary>
+        /// Send data as string asyncronoushly to websocket server
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
         public Task SendAsync(string data)
         {
             SocketSend(NativeRef, data);
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Check asyncronoushly data received from websocket server
+        /// </summary>
+        /// <returns></returns>
         public Task<byte[]> ReceiveAsync()
 	    {
             int length = SocketRecvLength(NativeRef);
@@ -91,6 +116,10 @@ namespace SocketIOSharp.Core
             return Task.FromResult(buffer);
         }
 
+        /// <summary>
+        /// Check errors returned from websocket server
+        /// </summary>
+        /// <returns></returns>
         public string GetError()
         {
             const int bufsize = 1024;
@@ -103,11 +132,18 @@ namespace SocketIOSharp.Core
             return Encoding.UTF8.GetString(buffer);
         }
 
+        /// <summary>
+        /// Get underlying websocket connection state
+        /// </summary>
+        /// <returns></returns>
         public WebSocketState GetState()
         {
             return NativeRef != 0 ? (WebSocketState)SocketState(NativeRef) : WebSocketState.Closed;
         }
 
+        /// <summary>
+        /// Dispose websocket
+        /// </summary>
         public void Dispose()
         {
             SocketClose(NativeRef);
@@ -115,6 +151,11 @@ namespace SocketIOSharp.Core
 
         #region Utils
 
+        /// <summary>
+        /// On message coroutine to work on WebGL builds
+        /// </summary>
+        /// <param name="onMessage"></param>
+        /// <returns></returns>
         private IEnumerator OnMessageCoroutine(Action<byte[]> onMessage)
         {
             if (onMessage == null)

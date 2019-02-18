@@ -8,8 +8,16 @@ using UnityEngine;
 
 namespace SocketIOSharp.Unity3D
 {
+    /// <summary>
+    /// SocketIO client to connect to a socketIO server supporting Websockets only
+    /// This implementation is specific for Unity3D builds and uses websocketsharp library or browser websockets for WebGL
+    /// </summary>
     public class SocketIO : SocketIOBase
     {
+        /// <summary>
+        /// Construct socketIO client with given configuration
+        /// </summary>
+        /// <param name="config"></param>
         public SocketIO(SocketIOConfigurator config, MonoBehaviour scriptInstance = null) :
             base(config)
         {

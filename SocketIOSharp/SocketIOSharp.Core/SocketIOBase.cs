@@ -73,6 +73,11 @@ namespace SocketIOSharp.Core
             Socket.Dispose();
         }
 
+        /// <summary>
+        /// Connect asyncronoushly to a socket io server
+        /// </summary>
+        /// <param name="uri">uri to connect to</param>
+        /// <returns></returns>
         public async Task<WebSocketState> ConnectAsync(Uri uri)
         {
             WebSocketState state = GetState();
@@ -85,6 +90,11 @@ namespace SocketIOSharp.Core
             return GetState();
         }
 
+        /// <summary>
+        /// Create Listener to a socket io event
+        /// </summary>
+        /// <param name="type">event type</param>
+        /// <param name="callback">callback with event arguments</param>
         public void On(string type, Action<IEnumerable<object>> callback)
         {
             if (callback == null)
@@ -102,18 +112,31 @@ namespace SocketIOSharp.Core
             }
         }
 
+        /// <summary>
+        /// Remove listeners by event type
+        /// </summary>
+        /// <param name="type">event type</param>
         public void Off(string type)
         {
             if(EventListenersDict.ContainsKey(type))
                 EventListenersDict[type].Clear();
         }
 
+        /// <summary>
+        /// Remove listeners by event type and index position
+        /// </summary>
+        /// <param name="type">event type</param>
+        /// <param name="index">position</param>
         public void Off(string type, int index)
         {
             if (EventListenersDict.ContainsKey(type))
                 EventListenersDict[type].RemoveAt(index);
         }
 
+        /// <summary>
+        /// Remove listener by callback instance
+        /// </summary>
+        /// <param name="callback">callback instance</param>
         public void Off(Action<IEnumerable<object>> callback)
         {
             foreach(var el in EventListenersDict.Values)
@@ -122,33 +145,60 @@ namespace SocketIOSharp.Core
             }
         }
 
+        /// <summary>
+        /// Remove listener by type and callback instance
+        /// </summary>
+        /// /// <param name="type">event type</param>
+        /// <param name="callback">callback instance</param>
         public void Off(string type, Action<IEnumerable<object>> callback)
         {
             if (EventListenersDict.ContainsKey(type))
                 EventListenersDict[type].Remove(callback);
         }
 
+        /// <summary>
+        /// Emit data to socket io server for a given event
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
         public Task EmitAsync(string type, object data)
         {
             return Socket.SendAsync(string.Format("{0}/{1},[\"{2}\",{3}]", IOEventOpcode, Namespace, type, SerializeEmitObject(data)));
         }
 
+        /// <summary>
+        /// Disconnect asyncronoushly from socket io server 
+        /// </summary>
+        /// <returns></returns>
         public Task DisconnectAsync()
         {
             isConnected = false;
             return Socket.CloseAsync();
         }
 
+        /// <summary>
+        /// Check is the socket is open and connected
+        /// </summary>
+        /// <returns></returns>
         public bool IsConnected()
         {
             return GetState() == WebSocketState.Open && isConnected;
         }
 
+        /// <summary>
+        /// Get underlying websocket connection state
+        /// </summary>
+        /// <returns></returns>
         public WebSocketState GetState()
         {
             return Socket != null ? Socket.GetState() : WebSocketState.Closed;
         }
 
+        /// <summary>
+        /// Method for callback to receive message and emit information to listners
+        /// </summary>
+        /// <param name="result"></param>
         private void ReceiveMessage(byte[] result)
         {
             if (result == null)
@@ -204,8 +254,23 @@ namespace SocketIOSharp.Core
             }
         }
 
+        /// <summary>
+        /// abstract method to parse json values
+        /// </summary>
+        /// <param name="jsonStr"></param>
         protected abstract void ParseEngineIOInitValues(string jsonStr);
+
+        /// <summary>
+        /// abstract method for emiting 
+        /// </summary>
+        /// <param name="jsonStr"></param>
         protected abstract void EmitToEventListeners(string jsonStr);
+
+        /// <summary>
+        /// abstract method for serialize data to json
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
         protected abstract string SerializeEmitObject(object data);
     }
 }
