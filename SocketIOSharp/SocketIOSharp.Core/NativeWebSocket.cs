@@ -15,14 +15,16 @@ namespace SocketIOSharp.Core
         private Queue<byte[]> Messages = new Queue<byte[]>();
         private bool IsConnected = false;
         private string Error = null;
+        private int ConnectTimeout = 1000;
 
         public NativeWebSocket()
         {
         }
 
-        public NativeWebSocket(Proxy proxy)
+        public NativeWebSocket(Proxy proxy, int connectTimeout)
         {
             Proxy = proxy;
+            ConnectTimeout = connectTimeout;
         }
 
         /// <summary>
@@ -44,15 +46,19 @@ namespace SocketIOSharp.Core
 
             Socket.OnMessage += (sender, e) => {
                 onMessage(e.RawData);
-                Messages.Enqueue(e.RawData);  
+                Messages.Enqueue(e.RawData);
             };
 
             Socket.OnOpen += (sender, e) => IsConnected = true;
             Socket.OnError += (sender, e) => Error = e.Message;
 
+            var startDate = DateTime.Now;
+
             Socket.ConnectAsync();
 
-            while (!IsConnected && Error == null)
+            while (!IsConnected && Error == null &&
+                   Socket.ReadyState == WebSocketState.Connecting &&
+                  (DateTime.Now - startDate).TotalMilliseconds < ConnectTimeout)
                 await Task.Yield();
         }
 

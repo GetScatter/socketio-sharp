@@ -27,7 +27,7 @@ namespace SocketIOSharp.Unity3D
             }
             else
             {
-                Socket = new NativeWebSocket(config.Proxy);
+                Socket = new NativeWebSocket(config.Proxy, config.ConnectTimeout);
             }
         }
 

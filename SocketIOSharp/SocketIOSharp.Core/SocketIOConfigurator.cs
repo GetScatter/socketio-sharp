@@ -13,5 +13,9 @@
         /// proxy to route traffic
         /// </summary>
         public Proxy  Proxy;
+        /// <summary>
+        /// Connect timeout
+        /// </summary>
+        public int ConnectTimeout = 3000;
     }
 }

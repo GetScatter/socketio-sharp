@@ -25,7 +25,7 @@ namespace SocketIOSharp
         public SocketIO(SocketIOConfigurator config) :
                 base(config)
         {
-            Socket = new NativeWebSocket(config.Proxy);
+            Socket = new NativeWebSocket(config.Proxy, config.ConnectTimeout);
         }
 
         #region Utils
